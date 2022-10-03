@@ -167,11 +167,14 @@ class Controller:
                                                       item[1] == False, validity_dict.items())))
         
         # signup method of Model inserts the data into database
-        status = self.model.signup(role, user_signup_dict)
+        # it also calls another method from Model internally to create the user role as well
+        # returns the request status and inserted user id
+        return_data = self.model.signup(role, user_signup_dict)
         
-        if (status == "200"):
+        # if successfully created the user, then creating/inserting user role as well
+        if (return_data[0] == "200"):
             self.view.signup_successful()
-        elif (status == "500"):
+        elif (return_data[0] == "500"):
             self.view.signup_failed()              
                 
                 

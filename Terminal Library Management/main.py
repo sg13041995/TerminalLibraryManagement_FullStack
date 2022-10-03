@@ -37,4 +37,7 @@ if auth_selection == "Exit":
 # otherwise we will handle the selected option
 # starting with Signup functionality
 elif (auth_selection == "Signup"):
-    controller.signup_handler(auth_selection)
+    controller.signup_handler(role_selection)
+# handling Login functionality
+# elif (auth_selection == "Login"):
+#     controller.signup_handler(auth_selection)
