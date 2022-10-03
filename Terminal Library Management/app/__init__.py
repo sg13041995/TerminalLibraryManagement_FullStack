@@ -20,5 +20,5 @@
 # ==============================================
 # code (__all__ is a dunder variable actually)
 # ==============================================
-__all__ = ["controllers", "views", "models"]
+__all__ = ["controllers", "views", "models", "validator"]
 # ==============================================
