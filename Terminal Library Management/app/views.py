@@ -95,3 +95,31 @@ class View:
         
         selected_option = input("TLM> ")
         return selected_option
+    
+    # display login form and take input from the user for the form
+    # returns the details entered by the user to the controller and controller take care of the logic from there
+    def login_form(self):
+        user_login_dict = {}
+        
+        print("\nPlease enter the following details to login:")
+        user_login_dict["email"] = input("TLM> Email: ")
+        user_login_dict["pass"] = input("TLM> Password: ")
+
+        return user_login_dict
+    
+    # if user successfully logged in
+    def login_greet(self, fname, lname):
+        print( "/////////////////////////////////////////////////////////////////")
+        print(f"/////////////////////// Login Successful ////////////////////////")
+        print( "/////////////////////////////////////////////////////////////////")
+        print(f"Welcome to the Login Dashboard Sir/Mam {fname} {lname}")
+        
+    # correct email and password but wrong role selected
+    def login_wrong_role(self, fname, lname):
+        print(f"TLM> Sir/Mam {fname} {lname}, you have chosen a wrong role.")
+        print(f"TML> The application will be closed for security reasons.")
+    
+    # wrong credentials and so login will fail
+    def login_wrong_credential(self):
+        print(f"TLM> Sir/Mam, you have entered invalid credentials.")
+        print(f"TLM> Please try again...")

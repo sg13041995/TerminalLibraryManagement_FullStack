@@ -1,4 +1,4 @@
--- call library.sp_get_user(@err,null,null, null);
+-- call library.sp_get_user(@err,null,null, null, null);
 
 DELIMITER $$
 
@@ -7,6 +7,7 @@ DROP PROCEDURE IF EXISTS library.sp_get_user$$
 CREATE  PROCEDURE library.sp_get_user(OUT error_code INT
                                    ,IN in_user_id INT
                                     ,IN in_email VARCHAR(100)
+                                    ,IN in_password VARCHAR(100)
                                     ,IN in_phone_number VARCHAR(50)
                                    )
 BEGIN
@@ -37,6 +38,10 @@ select user_id,
  
  IF in_email IS NOT NULL THEN
  SET @q = CONCAT(@q,' AND UPPER (email) = ', "'",UPPER(in_email),"'"); 
+ END IF;
+
+  IF in_password IS NOT NULL THEN
+ SET @q = CONCAT(@q,' AND UPPER (password) = ', "'",UPPER(in_password),"'"); 
  END IF;
 
  IF in_phone_number IS NOT NULL THEN

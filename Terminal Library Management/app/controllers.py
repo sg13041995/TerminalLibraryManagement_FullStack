@@ -9,6 +9,24 @@ class Controller:
         self.model = model
         # view holds the object of View class
         self.view = view
+        self.user_id = None
+        self.user_role = None
+    
+    @property
+    def user__role(self):
+        return self.user_role
+    
+    @user__role.setter
+    def user__role(self, user_role):
+        self.user_role = user_role
+    
+    @property
+    def user__id(self):
+        return self.user_id
+    
+    @user__id.setter
+    def user__id(self, user_id):
+        self.user_id = user_id
     
     # entry point of application
     def start_application_handler(self) -> None:
@@ -78,7 +96,7 @@ class Controller:
         return selected_option_name
     
     # handles the whole signup process
-    def signup_handler(self, role):
+    def signup_handler(self):
         # declaring the variable
         selected_option = ''
         # keep continuing the loop if user has entered something other than a, b or c      
@@ -124,7 +142,6 @@ class Controller:
             # cancel
             # again bringing new form
             elif (selected_option == 'Cancel'):
-                self.view.display_selection(selected_option, "Cancel")
                 continue
             # submit
             elif (selected_option == 'Submit'):
@@ -167,9 +184,13 @@ class Controller:
                                                       item[1] == False, validity_dict.items())))
         
         # signup method of Model inserts the data into database
-        # it also calls another method from Model internally to create the user role as well
-        # returns the request status and inserted user id
-        return_data = self.model.signup(role, user_signup_dict)
+        # it also calls another method from Model internally to create/register the user role as well
+        # self.user_role is an instance variable
+        # returns the request status and inserted user credentials
+        return_data = self.model.signup(self.user_role, user_signup_dict)
+        
+        # setting app_user_id
+        self.user_id = return_data[1][8]
         
         # if successfully created the user, then creating/inserting user role as well
         if (return_data[0] == "200"):
@@ -193,8 +214,28 @@ class Controller:
             else:
                 continue
     
-    def login_handler(self, role):
-        print("Looooogggiinnnnn........", role)
+    def login_handler(self):
+        login_credential_dict = self.view.login_form()
+        check_auth_role_response = self.model.check_user_existence_role(login_credential_dict["email"],
+                                                                   login_credential_dict["pass"],
+                                                                   self.user_role)
+        
+        # there could be three cases
+        # 1 - got the user with corrent role
+        if (check_auth_role_response[0] == "200"):
+            self.view.login_greet(check_auth_role_response[1][0][1],
+                                  check_auth_role_response[1][0][2])
+        
+        # got the user but with incorrect role
+        elif(check_auth_role_response[0] == "404" and check_auth_role_response[2] == False):
+            self.view.login_wrong_role(check_auth_role_response[1][0][1],
+                                  check_auth_role_response[1][0][2])
+            self.exit_application_handler()
+        
+        # didn't get the user because of wronf email-password combination
+        elif(check_auth_role_response[0] == "404" and check_auth_role_response[2] == None):
+            self.view.login_wrong_credential()
+            self.login_handler()
                   
         
                 
