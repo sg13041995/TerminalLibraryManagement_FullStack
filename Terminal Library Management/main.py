@@ -30,14 +30,19 @@ if role_selection == "Exit":
 # if user has chosen "Client" or "Librarian" from role menu then we will display authentication menu by calling "user_authentication_handler" method
 elif ((role_selection == "Client") or (role_selection == "Librarian")):
     auth_selection = controller.user_authentication_handler()
-
+    
 # again at this point, if the user wants to exit then we will again call "exit_application_handler" to quit the application
 if auth_selection == "Exit":
     controller.exit_application_handler()
 # otherwise we will handle the selected option
 # starting with Signup functionality
 elif (auth_selection == "Signup"):
-    controller.signup_handler(role_selection)
+    next_selected_option = controller.signup_handler(role_selection)
+    # if "Exit" has been selected then we will call "exit_application_handler" to quit the application
+    if (next_selected_option == "Exit"):
+        controller.exit_application_handler()
+    elif (next_selected_option == "Login"):
+        controller.login_handler(role_selection)
 # handling Login functionality
-# elif (auth_selection == "Login"):
-#     controller.signup_handler(auth_selection)
+elif (auth_selection == "Login"):
+    controller.login_handler(role_selection)

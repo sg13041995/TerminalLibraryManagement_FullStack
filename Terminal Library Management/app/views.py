@@ -85,3 +85,13 @@ class View:
         print("//////////////////////////////////////////////////////////////")
         print("//////////////////////// Signup Failed ///////////////////////")
         print("//////////////////////////////////////////////////////////////")
+    
+    # authentication menu display, selection and return
+    def auth_menu_after_signup(self):
+        print("\nPlease select an option:")
+        print("(a) Login")
+        print("(b) Exit")
+        print("Enter a or b")
+        
+        selected_option = input("TLM> ")
+        return selected_option

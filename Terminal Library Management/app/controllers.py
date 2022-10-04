@@ -175,8 +175,28 @@ class Controller:
         if (return_data[0] == "200"):
             self.view.signup_successful()
         elif (return_data[0] == "500"):
-            self.view.signup_failed()              
-                
+            self.view.signup_failed()
+        
+        # in the end showing the reduced authentication menu for login and exit
+        # again the choice will be returned to the main.py
+        while True:
+            selected_option = self.view.auth_menu_after_signup()
+            selected_option_name = lambda x : "Login" if x == 'a' else ("Exit" if x == 'b' else "Invalid Selection")
+            
+            self.view.display_selection(selected_option, selected_option_name(selected_option))
+            
+            if ((selected_option == 'a') or (selected_option == 'b')):
+                if (selected_option == 'a'):
+                    return "Login"
+                elif (selected_option == 'b'):
+                    return "Exit"
+            else:
+                continue
+    
+    def login_handler(self, role):
+        print("Looooogggiinnnnn........", role)
+                  
+        
                 
                     
             
