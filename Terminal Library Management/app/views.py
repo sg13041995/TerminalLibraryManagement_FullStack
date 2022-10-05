@@ -86,6 +86,10 @@ class View:
         print("//////////////////////// Signup Failed ///////////////////////")
         print("//////////////////////////////////////////////////////////////")
     
+    # user already exist
+    def user_already_exist(self, email):
+        print(f"TLM> Email '{email}' already registered")                
+    
     # authentication menu display, selection and return
     def auth_menu_after_signup(self):
         print("\nPlease select an option:")
@@ -112,14 +116,14 @@ class View:
         print( "/////////////////////////////////////////////////////////////////")
         print(f"/////////////////////// Login Successful ////////////////////////")
         print( "/////////////////////////////////////////////////////////////////")
-        print(f"Welcome to the Login Dashboard Sir/Mam {fname} {lname}")
+        print(f"TLM> Welcome {fname} {lname} to the Login Dashboard")
         
     # correct email and password but wrong role selected
     def login_wrong_role(self, fname, lname):
-        print(f"TLM> Sir/Mam {fname} {lname}, you have chosen a wrong role.")
+        print(f"TLM> User {fname} {lname}, you have chosen a wrong role.")
         print(f"TML> The application will be closed for security reasons.")
     
     # wrong credentials and so login will fail
     def login_wrong_credential(self):
-        print(f"TLM> Sir/Mam, you have entered invalid credentials.")
+        print(f"TLM> You have entered invalid credentials.")
         print(f"TLM> Please try again...")

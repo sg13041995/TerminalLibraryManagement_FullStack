@@ -56,3 +56,4 @@ elif (auth_selection == "Login"):
     # user__role is a setter function
     controller.user__role = role_selection
     controller.login_handler()
+

@@ -9,32 +9,61 @@ class Model:
         self.client_id = 2
         
     
-    # user creation
+    # user existence checking and then signup
     def signup(self, role : str, credential_dict : dict) -> None:        
-        # proc to create the user 
+        # existence checking
+        user_exists = True
+        
         try:
-            proc_name = "sp_create_user"
+            proc_name = "sp_get_user"
             proc_args = [0,
-                        self.super_admin_id,
-                        credential_dict["fname"],
-                        credential_dict["lname"],
-                        credential_dict["email"],
-                        credential_dict["pass1"],
-                        credential_dict["ph"],
                         None,
-                        0]
-            user_credentials = self.cs.callproc(procname=proc_name, args=proc_args)
-            self.cn.commit()
+                        credential_dict["email"],
+                        None,
+                        None]
             
-            # creating/ inserting user role into database
-            self.assign_user_role(role, user_credentials[8])
+            # calling the procs
+            self.cs.callproc(proc_name, proc_args)
+            # getting all user details
+            # if user is there we will get the details but if user not there then we will get None
+            user_details = [r.fetchone() for r in self.cs.stored_results()]
             
-            # on success
-            return ["200", user_credentials]
+            print(user_details)
+            
+            if (None not in user_details):
+                user_exists = True
+                return ["401", user_exists]
+            else:
+                user_exists = False                                                           
+                # proc to create the user 
+                try:
+                    proc_name = "sp_create_user"
+                    proc_args = [0,
+                                self.super_admin_id,
+                                credential_dict["fname"],
+                                credential_dict["lname"],
+                                credential_dict["email"],
+                                credential_dict["pass1"],
+                                credential_dict["ph"],
+                                None,
+                                0]
+                    user_credentials = self.cs.callproc(procname=proc_name, args=proc_args)
+                    self.cn.commit()
+                    
+                    # creating/ inserting user role into database
+                    self.assign_user_role(role, user_credentials[8])
+                    
+                    # on success
+                    return ["200", user_credentials]
+                except Exception:
+                    # on failure
+                    print("signup exception")
+                    user_credentials = None
+                    return ["500", user_credentials]
         except Exception:
-            # on failure
-            user_credentials = None
-            return ["500", user_credentials]
+            # on failure of checking the user existence
+            user_exists = True
+            return ["500", user_exists]
         
     # user role creation
     def assign_user_role(self, role, user_id):
@@ -61,6 +90,7 @@ class Model:
             return ["200", role_insert_status]
         except Exception:
             # on failure
+            print("assign role exception")
             role_insert_status = None
             return ["500", role_insert_status]
     

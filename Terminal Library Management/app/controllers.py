@@ -183,36 +183,58 @@ class Controller:
                                                  (lambda item :
                                                       item[1] == False, validity_dict.items())))
         
-        # signup method of Model inserts the data into database
+        # signup method of Model fist check the user existence and then inserts the data into database
         # it also calls another method from Model internally to create/register the user role as well
         # self.user_role is an instance variable
         # returns the request status and inserted user credentials
         return_data = self.model.signup(self.user_role, user_signup_dict)
+        print(return_data)
         
-        # setting app_user_id
-        self.user_id = return_data[1][8]
-        
-        # if successfully created the user, then creating/inserting user role as well
-        if (return_data[0] == "200"):
-            self.view.signup_successful()
-        elif (return_data[0] == "500"):
+        if (return_data[0] == "401"):
+            self.view.user_already_exist(user_signup_dict["email"])
             self.view.signup_failed()
-        
-        # in the end showing the reduced authentication menu for login and exit
-        # again the choice will be returned to the main.py
-        while True:
-            selected_option = self.view.auth_menu_after_signup()
-            selected_option_name = lambda x : "Login" if x == 'a' else ("Exit" if x == 'b' else "Invalid Selection")
+            user_signup_dict.clear()
+            # in the end showing the reduced authentication menu for login and exit
+            # again the choice will be returned to the main.py
+            while True:
+                selected_option = self.view.auth_menu_after_signup()
+                selected_option_name = lambda x : "Login" if x == 'a' else ("Exit" if x == 'b' else "Invalid Selection")
+                
+                self.view.display_selection(selected_option, selected_option_name(selected_option))
+                
+                if ((selected_option == 'a') or (selected_option == 'b')):
+                    if (selected_option == 'a'):
+                        return "Login"
+                    elif (selected_option == 'b'):
+                        return "Exit"
+                else:
+                    continue
             
-            self.view.display_selection(selected_option, selected_option_name(selected_option))
+        elif ((return_data[0] == "200") or (return_data[0] == "500")):
+            # setting app_user_id
+            self.user_id = return_data[1][8]
             
-            if ((selected_option == 'a') or (selected_option == 'b')):
-                if (selected_option == 'a'):
-                    return "Login"
-                elif (selected_option == 'b'):
-                    return "Exit"
-            else:
-                continue
+            # if successfully created the user, then creating/inserting user role as well
+            if (return_data[0] == "200"):
+                self.view.signup_successful()
+            elif (return_data[0] == "500"):
+                self.view.signup_failed()
+            
+            # in the end showing the reduced authentication menu for login and exit
+            # again the choice will be returned to the main.py
+            while True:
+                selected_option = self.view.auth_menu_after_signup()
+                selected_option_name = lambda x : "Login" if x == 'a' else ("Exit" if x == 'b' else "Invalid Selection")
+                
+                self.view.display_selection(selected_option, selected_option_name(selected_option))
+                
+                if ((selected_option == 'a') or (selected_option == 'b')):
+                    if (selected_option == 'a'):
+                        return "Login"
+                    elif (selected_option == 'b'):
+                        return "Exit"
+                else:
+                    continue
     
     def login_handler(self):
         login_credential_dict = self.view.login_form()
@@ -226,16 +248,24 @@ class Controller:
             self.view.login_greet(check_auth_role_response[1][0][1],
                                   check_auth_role_response[1][0][2])
         
-        # got the user but with incorrect role
+        # 2 - got the user but with incorrect role
+        # application will exit for security reasons
         elif(check_auth_role_response[0] == "404" and check_auth_role_response[2] == False):
             self.view.login_wrong_role(check_auth_role_response[1][0][1],
                                   check_auth_role_response[1][0][2])
             self.exit_application_handler()
         
-        # didn't get the user because of wronf email-password combination
+        # 3 - didn't get the user because of wrong email-password combination
+        # we will again call the login_handler(recursion)
         elif(check_auth_role_response[0] == "404" and check_auth_role_response[2] == None):
             self.view.login_wrong_credential()
             self.login_handler()
+        
+    def client_handler(self):
+        print("client_handler")
+
+    def librarian_handler(self):
+        print("librarian_handler")
                   
         
                 
