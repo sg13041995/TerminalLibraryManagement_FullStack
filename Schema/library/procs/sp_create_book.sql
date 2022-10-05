@@ -1,11 +1,10 @@
--- call library.sp_create_book (@err, 1,1,'Book Name','Book Desc','Book Author','Publication Company',123456789,NULL,@aid);
+-- call library.sp_create_book (@err,1,'Book Name','Book Desc','Book Author','Publication Company',123456789,NULL,@aid);
 
 DROP PROCEDURE IF EXISTS library.sp_create_book;
 
 DELIMITER $$
 CREATE PROCEDURE library.sp_create_book(OUT error_code INT
 				              ,IN in_app_user_id INT
-				              ,IN in_user_id INT
                                           ,IN in_book_name VARCHAR(100)
                                           ,IN in_book_desc VARCHAR(500)
                                           ,IN in_book_author TEXT
@@ -36,7 +35,7 @@ INSERT INTO library.book
        )
 VALUES
        (NULL,
-       in_user_id, 
+       1, 
        in_book_name, 
        in_book_desc,
        in_book_author,

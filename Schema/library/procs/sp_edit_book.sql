@@ -22,7 +22,7 @@ SET error_code=-2;
 
 UPDATE library.book 
 SET 	
-        user_id                      = IFNULL (user_id, user_id),
+        user_id                      = IFNULL (in_user_id, user_id),
         book_name                    = IFNULL (in_book_name, book_name),
         book_desc                    = IFNULL (in_book_desc, book_desc),
         book_author                  = IFNULL (in_book_author, book_author),

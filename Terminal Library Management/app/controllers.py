@@ -1,3 +1,4 @@
+import stat
 from app.models import Model
 from app.views import View
 # validator module holds the functions for validating the individual input fields of the form
@@ -186,22 +187,23 @@ class Controller:
         # signup method of Model fist check the user existence and then inserts the data into database
         # it also calls another method from Model internally to create/register the user role as well
         # self.user_role is an instance variable
-        # returns the request status and inserted user credentials
+        # returns the request status along with inserted user credentials/already exist or not
         return_data = self.model.signup(self.user_role, user_signup_dict)
-        print(return_data)
         
+        # if user already exist (status 401) we are giving choice to login or exit
+        # no insert has happend in the database
         if (return_data[0] == "401"):
             self.view.user_already_exist(user_signup_dict["email"])
             self.view.signup_failed()
             user_signup_dict.clear()
-            # in the end showing the reduced authentication menu for login and exit
-            # again the choice will be returned to the main.py
+            # showing the menu and and asking to choose
             while True:
                 selected_option = self.view.auth_menu_after_signup()
                 selected_option_name = lambda x : "Login" if x == 'a' else ("Exit" if x == 'b' else "Invalid Selection")
                 
                 self.view.display_selection(selected_option, selected_option_name(selected_option))
                 
+                # returning the choice login/exit to the main.py
                 if ((selected_option == 'a') or (selected_option == 'b')):
                     if (selected_option == 'a'):
                         return "Login"
@@ -209,14 +211,15 @@ class Controller:
                         return "Exit"
                 else:
                     continue
-            
+        
+        # if user does not exist already
+        # user details will be entered in the database and we will save the user id in the instance variable
         elif ((return_data[0] == "200") or (return_data[0] == "500")):
-            # setting app_user_id
-            self.user_id = return_data[1][8]
-            
             # if successfully created the user, then creating/inserting user role as well
             if (return_data[0] == "200"):
                 self.view.signup_successful()
+                # setting app_user_id
+                self.user_id = return_data[1][8]
             elif (return_data[0] == "500"):
                 self.view.signup_failed()
             
@@ -236,8 +239,11 @@ class Controller:
                 else:
                     continue
     
+    # will handle login and validation during login
     def login_handler(self):
+        # getting credentials from user
         login_credential_dict = self.view.login_form()
+        # validating user against the supplied credentials
         check_auth_role_response = self.model.check_user_existence_role(login_credential_dict["email"],
                                                                    login_credential_dict["pass"],
                                                                    self.user_role)
@@ -245,8 +251,19 @@ class Controller:
         # there could be three cases
         # 1 - got the user with corrent role
         if (check_auth_role_response[0] == "200"):
+            # login_greet takes first name and last name
             self.view.login_greet(check_auth_role_response[1][0][1],
                                   check_auth_role_response[1][0][2])
+            
+            # setting user_id to current logged in user
+            self.user__id = check_auth_role_response[1][0][0]
+            print(self.user__id)
+            
+            # calling the librarian/client handler based on the role, selected initially at the first step in the application
+            if (self.user_role == "Client"):
+                self.client_handler()
+            elif (self.user_role == "Librarian"):
+                self.librarian_handler()
         
         # 2 - got the user but with incorrect role
         # application will exit for security reasons
@@ -260,12 +277,121 @@ class Controller:
         elif(check_auth_role_response[0] == "404" and check_auth_role_response[2] == None):
             self.view.login_wrong_credential()
             self.login_handler()
+
+    # handle the logged in user when role is librarian
+    def librarian_handler(self):
+        while True:
+            selected_menu = self.view.librarian_menu()
+            # 0 is option, 1 is option name, 2 is list of valid options
+            self.view.display_selection(selected_menu[0], selected_menu[1])
+            # if selected option is in the list (means, not an Invalid Option)
+            if (selected_menu[1] in selected_menu[2]):
+                break
+            else:
+                continue
+        
+        #=================================================================================
+        # 1 - Issue a book
+        #=================================================================================
+        if (selected_menu[1] == "Issue a new book"):
+            ids = self.view.get_book_id_user_id()
+            
+            if(None not in ids):
+                status = self.model.book_issue(app_user_id=self.user_id,
+                                                    user_id=ids[1],
+                                                    book_id=ids[0])
+                # if status 200
+                if (status[0] == "200"):
+                    print("Book issued Successfully")           
+                elif (status[0] == "500"):
+                    print("Failed to issue the book")           
+        
+        #=================================================================================
+        # 3 - Get all the books
+        #=================================================================================
+        elif (selected_menu[1] == "Get all the books"):
+            column_names_string = ""
+            # asking from Model
+            column_names = ["book_id",
+                            "user_id",
+                            "book_name",
+                            "book_author",
+                            "publication_company",
+                            "is_rented"]
+            
+            for item in column_names:
+                column_names_string += f"{item},"
+            
+            column_names_string = column_names_string[:len(column_names_string)-1]
+            
+            # model method call    
+            all_books = self.model.get_all_books(column_names=column_names_string)
+            
+            # if status 200
+            if (all_books[0] == "200"):
+                self.view.view_all_books(all_books[1],column_names)
+            else:
+                print("Failed to fetch the books")
+                   
+        #=================================================================================
+        # 4 - get rented books
+        #=================================================================================
+        elif (selected_menu[1] == "Get rented books"):
+            column_names_string = ""
+            # asking from Model
+            column_names = ["book_id",
+                            "user_id",
+                            "book_name",
+                            "book_author",
+                            "publication_company",
+                            "is_rented",
+                            "rented_on"]
+            
+            for item in column_names:
+                column_names_string += f"{item},"
+            
+            column_names_string = column_names_string[:len(column_names_string)-1]
+            
+            # model method call
+            all_books = self.model.get_all_books(column_names=column_names_string, where_clause="is_rented=1")
+            
+            # if status 200
+            if (all_books[0] == "200"):
+                self.view.view_all_books(all_books[1],column_names)
+                # print(all_books[1])
+            else:
+                print("Failed to fetch the books")
+    
+        #=================================================================================
+        # 5 - get rentable books
+        #=================================================================================
+        elif (selected_menu[1] == "Get all the rentable books"):
+            column_names_string = ""
+            # asking from Model
+            column_names = ["book_id",
+                            "user_id",
+                            "book_name",
+                            "book_author",
+                            "publication_company",
+                            "is_rented"]
+            
+            for item in column_names:
+                column_names_string += f"{item},"
+            
+            column_names_string = column_names_string[:len(column_names_string)-1]
+            
+            # model method call
+            all_books = self.model.get_all_books(column_names=column_names_string, where_clause="is_rented=0")
+            
+            # if status 200
+            if (all_books[0] == "200"):
+                self.view.view_all_books(all_books[1],column_names)
+                # print(all_books[1])
+            else:
+                print("Failed to fetch the books")
         
     def client_handler(self):
         print("client_handler")
-
-    def librarian_handler(self):
-        print("librarian_handler")
                   
         
                 

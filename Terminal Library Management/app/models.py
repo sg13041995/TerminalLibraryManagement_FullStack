@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class Model:
     # constructor
     def __init__(self, cn, cs, super_admin_id):
@@ -27,9 +29,7 @@ class Model:
             # getting all user details
             # if user is there we will get the details but if user not there then we will get None
             user_details = [r.fetchone() for r in self.cs.stored_results()]
-            
-            print(user_details)
-            
+                        
             if (None not in user_details):
                 user_exists = True
                 return ["401", user_exists]
@@ -94,6 +94,7 @@ class Model:
             role_insert_status = None
             return ["500", role_insert_status]
     
+    # handle the user credential checking along with the proper associated role
     def check_user_existence_role(self, email, password, role):
         user_details = None
         is_valid_role = None
@@ -116,6 +117,7 @@ class Model:
             if (None in user_details):
                 user_details = None
                 return ["404", user_details, is_valid_role]
+            # otherwise the user exist and we have already received the details of the user
             else:
                 role_type_id = None
                 # initially invalid role
@@ -147,6 +149,8 @@ class Model:
             is_valid_role = None
             return ["500", user_details, is_valid_role]             
     
+    # check whether the corresponding role is valid/assigned for/to the given user id
+    # this method is called from check_user_existence_role method internally
     def validate_user_id_role(self, user_id, role_type_id):
         try:
             proc_name = "sp_get_user_role"
@@ -164,3 +168,86 @@ class Model:
             # on failure
             role_validity_details = None
             return ["500", role_validity_details]
+    
+    # get all the available details of all the books books
+    def get_all_details_all_books(self, query_flag = 0):
+        all_books = ""
+        try:
+            proc_name = "sp_get_book"
+            proc_args = [0,
+                         None,
+                         None,
+                         None,
+                         None,
+                         None,
+                         None,
+                         None,
+                         None]
+            
+            # calling the procs
+            self.cs.callproc(proc_name, proc_args)
+            # getting all user details
+            all_books = [r.fetchall() for r in self.cs.stored_results()]
+        
+            return ["200", all_books]
+        except Exception:
+            all_books = None
+            return ["500", all_books]
+
+    
+    # same method will be used for 1 - book issue and return
+    def book_issue(self, app_user_id, book_id, user_id):
+        try:
+            # checking whether book id exist and also available for renting
+            sql_query = f"SELECT book_id, book_name FROM book WHERE is_rented=0 AND status=1 AND book_id={book_id};"
+            
+            self.cs.execute(sql_query)
+            query_result = self.cs.fetchone()
+            
+            # if book id exist and available for renting
+            if (query_result != None):                      
+                now = datetime.now()
+                sql_now = now.strftime('%Y-%m-%d %H:%M:%S')
+                proc_name = "sp_edit_book"
+                proc_args = [0,
+                            app_user_id,
+                            book_id,
+                            user_id,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            1,
+                            sql_now,
+                            None]
+                
+                self.cs.callproc(proc_name, proc_args)
+                self.cn.commit()
+                return ["200"]
+            else:
+                return ["500"]
+        except Exception:
+            return ["500"]
+    
+    # same method will be used for - 3, 4, 5
+    # get all books, get rented books, get rentable books
+    def get_all_books(self,
+                      column_names='*',
+                      table_name="book",
+                      where_clause='1=1',
+                      no_of_rows=10,
+                      all=True,
+                      rows=False):
+        try:       
+            self.cs.execute(f"SELECT {column_names} FROM {table_name} WHERE status=1 AND {where_clause}")
+            if (all == True):
+                record_all_list = self.cs.fetchall()
+                print(record_all_list)
+                return ["200", record_all_list]
+            elif (all == False):  
+                record_n_list = self.cs.fetchmany(no_of_rows)
+                return ["200", record_n_list]
+        except Exception:
+            record_all_list = None
+            return ["500", record_all_list]
