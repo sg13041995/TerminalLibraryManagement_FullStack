@@ -1,3 +1,4 @@
+from copy import deepcopy
 import stat
 from app.models import Model
 from app.views import View
@@ -324,7 +325,6 @@ class Controller:
                                                     book_id=ids[0])
                 # if status 200
                 if (status[0] == "200"):
-                    # ["500", book_name, rented_on, rent_days, fine, user_name, user_email]
                     self.view.operation_message("Book returned Successfully")
                     self.view.display_fine_details(book_name=status[1],
                                                    rented_on=status[2],
@@ -338,8 +338,30 @@ class Controller:
                     self.view.operation_message("Failed to return the book")
             
             self.view.press_button_continue()              
+        
         #=================================================================================
-        # 3 - Get all the books
+        # 3 - Fees Submission
+        #=================================================================================
+        elif (selected_menu[1] == "Fees Submission"):
+            ids = self.view.get_book_id_user_id(book_id=False, fees=True)
+            
+            status = self.model.submit_fees(app_user_id=self.user_id,
+                                            user_id=ids[0],
+                                            fees=ids[1])
+            
+            if (status[0] == "200"):
+                self.view.display_fees_submission(user_name=status[1],
+                                                  user_email=status[2],
+                                                  due_fees=status[3],
+                                                  submitted_fees=ids[1],
+                                                  remaining_fees=status[4])
+            elif (status[0] == "500"):
+                 self.view.operation_message("Failed to submit the fees")
+        
+            self.view.press_button_continue()
+                                       
+        #=================================================================================
+        # 4 - Get all the books
         #=================================================================================
         elif (selected_menu[1] == "Get all the books"):
             column_names_string = ""
@@ -367,7 +389,7 @@ class Controller:
             
             self.view.press_button_continue()  
         #=================================================================================
-        # 4 - get rented books
+        # 5 - get rented books
         #=================================================================================
         elif (selected_menu[1] == "Get rented books"):
             column_names_string = ""
@@ -396,7 +418,7 @@ class Controller:
             
             self.view.press_button_continue()  
         #=================================================================================
-        # 5 - get rentable books
+        # 6 - get rentable books
         #=================================================================================
         elif (selected_menu[1] == "Get all the rentable books"):
             column_names_string = ""
@@ -422,10 +444,69 @@ class Controller:
             else:
                 self.view.operation_message("Failed to fetch rentable books list")
                 
-            self.view.press_button_continue() 
+            self.view.press_button_continue()
+        
+        #=================================================================================
+        # 7 - upload a new book
+        #================================================================================= 
+        elif (selected_menu[1] == "Upload a book"):
+            book_details_list = self.view.get_book_details(app_user_id=self.user_id)
+            status = self.model.upload_book(book_details_list)
+            
+            if (status[0] == "200"):
+                self.view.display_created_book(status[1])
+            elif (status[0] == "500"):
+                self.view.operation_message("Failed to upload the new book")
+            
+            self.view.press_button_continue()
+        
+        #=================================================================================
+        # 8 - update a book
+        #================================================================================= 
+        elif (selected_menu[1] == "Update a book"):
+            book_details_list = self.view.get_book_details(app_user_id=self.user_id,
+                                                           create=False,
+                                                           delete=False,
+                                                           edit=True)
+            status = self.model.edit_book(book_details_list)
+            
+            if (status == "200"):
+                self.view.operation_message("Updated the book Successfully")
+            elif (status == "500"):
+                self.view.operation_message("Failed to update the book")
+            
+            self.view.press_button_continue()
+        
+        #=================================================================================
+        # 9 - delete a book
+        #================================================================================= 
+        elif (selected_menu[1] == "Delete a book"):
+            book_delete = self.view.get_book_details(app_user_id=self.user_id,
+                                                           create=False,
+                                                           delete=True)
+            print(book_delete)
+            delete_status = self.model.delete_book(app_user_id=book_delete[1],
+                                            book_id=book_delete[0])
+            print(delete_status)
+            if (delete_status == "200"):
+                self.view.operation_message("Deleted the book Successfully")
+            elif (delete_status == "500"):
+                self.view.operation_message("Failed to delete the book")
+            
+            self.view.press_button_continue()        
+
         
         # calling self again (recursion)
         self.librarian_handler()
+    
+    
+    
+    
+    
+    
+    
+    
+    
     def client_handler(self):
         print("client_handler")
                   

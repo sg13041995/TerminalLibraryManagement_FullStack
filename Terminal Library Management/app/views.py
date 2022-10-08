@@ -134,12 +134,14 @@ class View:
         menu_list = ["Exit",
                      "Issue a new book",
                      "Client book submission",
+                     "Fees Submission",
                      "Get all the books",
                      "Get rented books",
                      "Get all the rentable books",
-                     "Add a book",
+                     "Upload a book",
                      "Update a book",
                      "Delete a book",
+                     "Get user details",
                      "Update an user",
                      "Delete an user"]
         print("\nPlease select an option:")
@@ -154,7 +156,9 @@ class View:
         print(f"(8) {menu_list[8]}")
         print(f"(9) {menu_list[9]}")
         print(f"(10) {menu_list[10]}")
-        print("Enter a number between 0 to 10")
+        print(f"(11) {menu_list[11]}")
+        print(f"(12) {menu_list[12]}")
+        print("Enter a number between 0 to 12")
 
         selected_option_name = ""
         int_option = ""
@@ -167,7 +171,7 @@ class View:
             selected_option_name = "Invalid Input"
             return [selected_option, selected_option_name, menu_list]
 
-        if ((int_option >= 0) and int_option <= 10):
+        if ((int_option >= 0) and int_option <= 12):
             selected_option_name = menu_list[int_option]
             return [selected_option, selected_option_name, menu_list]
         else:
@@ -178,19 +182,45 @@ class View:
         data_frame = DataFrame(data_list, columns=column_names)
         print(data_frame.to_markdown(tablefmt="grid"))
     
-    def get_book_id_user_id(self):
-        print("TLM> Please enter the book id:")
-        book_id = input("TLM> ")
-        print("TLM> Please enter the user id:")
-        user_id = input("TLM> ")
-        
-        try:
-            book_id = abs(int(book_id))
-            user_id = abs(int(user_id))
+    def get_book_id_user_id(self, book_id=True, user_id=True, fees=False):
+        if((user_id == True) and (book_id == True)):
+            print("TLM> Please enter the book id:")
+            book_id = input("TLM> ")
+            print("TLM> Please enter the user id:")
+            user_id = input("TLM> ")
+            try:
+                book_id = abs(int(book_id))
+                user_id = abs(int(user_id))
+                
+                return [book_id, user_id]
+            except Exception:
+                return [None, None]
             
-            return [book_id, user_id]
-        except Exception:
-            return [None, None]
+        elif((user_id == False) and (book_id == True)):
+            print("TLM> Please enter the book id:")
+            book_id = input("TLM> ")
+            try:
+                book_id = abs(int(book_id))
+                
+                return book_id
+            except Exception:
+                return None
+            
+        elif((user_id == True) and (book_id == False)):
+            print("TLM> Please enter the user id:")
+            user_id = input("TLM> ")
+            submit_fees = "0"
+            if (fees == True):
+                print("TLM> Please enter the fees submission amount:")
+                submit_fees = input("TLM> ")
+            try:
+                user_id = abs(int(user_id))
+                submit_fees = abs(int(submit_fees))
+                return [user_id, submit_fees]
+            except Exception:
+                return [None, None]
+    
+    
     
     # operation failure/successful in librarian handler
     def operation_message(self, message):
@@ -214,4 +244,154 @@ class View:
         print(f"Fine: {fine} Rupees")
         print(f"Due Fees: {due_fees} Rupees")
         print(f"Total Fees: {total_fees} Rupees")
+        print("/////////////////////////////////////////////////////////////////")
+    
+    # display fees submission
+    def display_fees_submission(self, user_name, user_email, due_fees, submitted_fees, remaining_fees):
+        print("/////////////////////////////////////////////////////////////////")
+        print(f"User Name: {user_name}")
+        print(f"User Email: {user_email}")
+        print(f"Previous Due Fees: {due_fees} Rupees")
+        print(f"Submitted Fees: {submitted_fees} Rupees")
+        print(f"Remaining Fees: {remaining_fees} Rupees")
+        print("/////////////////////////////////////////////////////////////////")
+
+    # collect book details during create, edit, delete
+    def get_book_details(self, app_user_id, create=True, delete=False, edit=False):
+        edit_book_id=None
+        if (delete == True):
+            print("TLM> Please enter the book id:")
+            book_id = input("TLM> ")
+            if(book_id == ""):
+                edit_book_id = None
+                app_user_id = None
+                return [edit_book_id, app_user_id]
+            else:
+                edit_book_id = book_id
+                return [edit_book_id, app_user_id]
+        
+        elif (edit == True):
+            book_details_list = [0,
+                                app_user_id,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None]
+            
+            print("TLM> Please enter the book id:")
+            book_id = input("TLM> ")
+            if(book_id == ""):
+                edit_book_id = None
+            else:
+                edit_book_id = book_id
+                book_details_list[2] = edit_book_id
+            
+            print("TLM> Please enter the book name:")
+            book_name = input("TLM> ")
+            if(book_name == ""):
+                book_name = None
+            else:
+                book_details_list[4] = book_name
+                                
+            print("TLM> Please enter the book description:")
+            book_desc = input("TLM> ")
+            if(book_desc == ""):
+                book_desc = None
+            else:
+                book_details_list[5] = book_desc
+            
+            print("TLM> Please enter the book author:")
+            book_author = input("TLM> ")
+            if(book_author == ""):
+                book_author = None
+            else:
+                book_details_list[6] = book_author
+            
+            print("TLM> Please enter the book publication company:")
+            book_publication_company = input("TLM> ")
+            if(book_publication_company == ""):
+                book_publication_company = None
+            else:
+                book_details_list[7] = book_publication_company
+            
+            print("TLM> Please enter the book ISBN:")
+            book_isbn = input("TLM> ")
+            if(book_isbn == ""):
+                book_isbn = None
+            else:
+                book_details_list[8] = book_isbn
+            
+            return book_details_list
+        
+        else:
+            book_details_list = [0,
+                                app_user_id,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                0]
+            
+            print("TLM> Please enter the book name:")
+            book_name = input("TLM> ")
+            if(book_name == ""):
+                pass
+            elif(book_name == "None"):
+                book_details_list[2] = None
+            else:
+                book_details_list[2] = book_name
+                                
+            print("TLM> Please enter the book description:")
+            book_desc = input("TLM> ")
+            if(book_desc == ""):
+                pass
+            elif(book_desc == "None"):
+                book_details_list[3] = None
+            else:
+                book_details_list[3] = book_desc
+            
+            print("TLM> Please enter the book author:")
+            book_author = input("TLM> ")
+            if(book_author == ""):
+                pass
+            elif(book_author == "None"):
+                book_details_list[4] = None
+            else:
+                book_details_list[4] = book_author
+            
+            print("TLM> Please enter the book publication company:")
+            book_publication_company = input("TLM> ")
+            if(book_publication_company == ""):
+                pass
+            elif(book_publication_company == "None"):
+                book_details_list[5] = None
+            else:
+                book_details_list[5] = book_publication_company
+            
+            print("TLM> Please enter the book ISBN:")
+            book_isbn = input("TLM> ")
+            if(book_isbn == ""):
+                pass
+            elif(book_isbn == "None"):
+                book_details_list[6] = None
+            else:
+                book_details_list[6] = book_isbn
+            
+            return book_details_list
+    
+    def display_created_book(self,book_details_tuple):
+        print("/////////////////////////////////////////////////////////////////")
+        print(f"Book Name: {book_details_tuple[2]}")
+        print(f"Book Description: {book_details_tuple[3]}")
+        print(f"Book Author: {book_details_tuple[4]}")
+        print(f"Publication Company: {book_details_tuple[5]}")
+        print(f"ISBN: {book_details_tuple[6]}")
         print("/////////////////////////////////////////////////////////////////")

@@ -1,4 +1,6 @@
 from datetime import datetime
+from msilib.schema import CreateFolder
+from tkinter.messagebox import NO
 from dateutil.relativedelta import relativedelta
 
 class Model:
@@ -234,7 +236,7 @@ class Model:
         except Exception:
             return ["500"]
         
-    # this method will be used for 1 - book issue
+    # this method will be used for 2 - book return
     def book_return(self, app_user_id, book_id, user_id):
         try:
             # checking whether book id exist and also already rented to that specific user
@@ -348,7 +350,41 @@ class Model:
                 total_fine = None
                 return ["500", book_name, rented_on, rent_days, fine, user_name, user_email, due_fees, total_fees]
     
-    # same method will be used for - 3, 4, 5
+    # this method takes user id and submit the fees
+    def submit_fees(self, app_user_id, user_id, fees):
+        try:
+            sql_query = f"SELECT first_name, last_name, email, fees FROM user WHERE user_id={user_id} AND status=1 AND fees>={fees};"
+            self.cs.execute(sql_query)
+            query_result2 = self.cs.fetchone()
+                
+            user_name = f"{query_result2[0]} {query_result2[1]}"
+            user_email = query_result2[2]
+            due_fees = query_result2[3]
+            
+            net_remaining_fees = (due_fees - fees)
+            
+            proc_name = "sp_edit_user"
+            proc_args = [0,
+                        app_user_id,
+                        user_id,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        net_remaining_fees,
+                        None]
+            self.cs.callproc(proc_name, proc_args)
+            self.cn.commit()
+            return ["200", user_name, user_email, due_fees, net_remaining_fees]
+        except Exception:
+            user_name = None
+            user_email = None
+            due_fees = None
+            net_remaining_fees = None
+            return ["500", user_name, user_email, due_fees, net_remaining_fees]
+    
+    # same method will be used for - 4, 5, 6
     # get all books, get rented books, get rentable books
     def get_all_books(self,
                       column_names='*',
@@ -368,3 +404,85 @@ class Model:
         except Exception:
             record_all_list = None
             return ["500", record_all_list]
+    
+    # 7 - Upload new book
+    def upload_book(self, book_detail_list):
+        try:
+            proc_name = "sp_create_book"
+            proc_args = [0,
+                        book_detail_list[1],
+                        book_detail_list[2],
+                        book_detail_list[3],
+                        book_detail_list[4],
+                        book_detail_list[5],
+                        book_detail_list[6],
+                        None,
+                        0]
+            
+            created_book = self.cs.callproc(proc_name, proc_args)
+            self.cn.commit()
+            return ["200", created_book]
+        except Exception:
+            created_book = None
+            return ["500", created_book]
+    
+    # 8 edit a book
+    def edit_book(self, book_detail_list):
+        try:
+            sql_query = f"SELECT book_id FROM book WHERE status=1 AND book_id={book_detail_list[2]};"
+            self.cs.execute(sql_query)
+            query_result1 = self.cs.fetchone()
+            
+            if(query_result1 != None):
+                proc_name = "sp_edit_book"
+                proc_args = [book_detail_list[0],
+                            book_detail_list[1],
+                            book_detail_list[2],
+                            book_detail_list[3],
+                            book_detail_list[4],
+                            book_detail_list[5],
+                            book_detail_list[6],
+                            book_detail_list[7],
+                            book_detail_list[8],
+                            book_detail_list[9],
+                            book_detail_list[10],
+                            book_detail_list[11]]
+                
+                self.cs.callproc(proc_name, proc_args)
+                self.cn.commit()
+                return "200"
+            else:
+                return "500"
+        except Exception:
+            return "500"
+        
+    # 9 - delete a book
+    def delete_book(self, app_user_id, book_id):
+        try:
+            sql_query = f"SELECT book_id FROM book WHERE status=1 AND is_rented=0 AND book_id={book_id};"
+            self.cs.execute(sql_query)
+            query_result1 = self.cs.fetchone()
+            
+            if(query_result1 != None):
+                datetime_reset = "0000-00-00 00:00:00"
+                proc_name = "sp_edit_book"
+                proc_args = [0,
+                            app_user_id,
+                            book_id,
+                            self.super_admin_id,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            0,
+                            datetime_reset,
+                            0]
+                
+                self.cs.callproc(proc_name, proc_args)
+                self.cn.commit()
+                return "200"
+            else:
+                return "500"
+        except Exception:
+            return "500"
