@@ -289,11 +289,16 @@ class Controller:
                 break
             else:
                 continue
-        
+            
+        #=================================================================================
+        # 0 - Exit
+        #=================================================================================
+        if (selected_menu[1] == "Exit"):
+            self.exit_application_handler()
         #=================================================================================
         # 1 - Issue a book
         #=================================================================================
-        if (selected_menu[1] == "Issue a new book"):
+        elif (selected_menu[1] == "Issue a new book"):
             ids = self.view.get_book_id_user_id()
             
             if(None not in ids):
@@ -302,10 +307,37 @@ class Controller:
                                                     book_id=ids[0])
                 # if status 200
                 if (status[0] == "200"):
-                    print("Book issued Successfully")           
+                    self.view.operation_message("Book issued Successfully")           
                 elif (status[0] == "500"):
-                    print("Failed to issue the book")           
-        
+                    self.view.operation_message("Failed to issue the book")
+            
+            self.view.press_button_continue()              
+        #=================================================================================
+        # 2 - Return a book
+        #=================================================================================
+        elif (selected_menu[1] == "Client book submission"):
+            ids = self.view.get_book_id_user_id()
+            
+            if(None not in ids):
+                status = self.model.book_return(app_user_id=self.user_id,
+                                                    user_id=ids[1],
+                                                    book_id=ids[0])
+                # if status 200
+                if (status[0] == "200"):
+                    # ["500", book_name, rented_on, rent_days, fine, user_name, user_email]
+                    self.view.operation_message("Book returned Successfully")
+                    self.view.display_fine_details(book_name=status[1],
+                                                   rented_on=status[2],
+                                                   rent_days=status[3],
+                                                   fine= status[4],
+                                                   user_name=status[5],
+                                                   user_email=status[6],         
+                                                   due_fees=status[7],         
+                                                   total_fees=status[8])         
+                elif (status[0] == "500"):
+                    self.view.operation_message("Failed to return the book")
+            
+            self.view.press_button_continue()              
         #=================================================================================
         # 3 - Get all the books
         #=================================================================================
@@ -331,8 +363,9 @@ class Controller:
             if (all_books[0] == "200"):
                 self.view.view_all_books(all_books[1],column_names)
             else:
-                print("Failed to fetch the books")
-                   
+                self.view.operation_message("Failed to fetch all books list")
+            
+            self.view.press_button_continue()  
         #=================================================================================
         # 4 - get rented books
         #=================================================================================
@@ -358,10 +391,10 @@ class Controller:
             # if status 200
             if (all_books[0] == "200"):
                 self.view.view_all_books(all_books[1],column_names)
-                # print(all_books[1])
             else:
-                print("Failed to fetch the books")
-    
+                self.view.operation_message("Failed to fetch rented books list")
+            
+            self.view.press_button_continue()  
         #=================================================================================
         # 5 - get rentable books
         #=================================================================================
@@ -386,10 +419,13 @@ class Controller:
             # if status 200
             if (all_books[0] == "200"):
                 self.view.view_all_books(all_books[1],column_names)
-                # print(all_books[1])
             else:
-                print("Failed to fetch the books")
+                self.view.operation_message("Failed to fetch rentable books list")
+                
+            self.view.press_button_continue() 
         
+        # calling self again (recursion)
+        self.librarian_handler()
     def client_handler(self):
         print("client_handler")
                   

@@ -131,7 +131,8 @@ class View:
 
     # librarian menu
     def librarian_menu(self):
-        menu_list = ["Issue a new book",
+        menu_list = ["Exit",
+                     "Issue a new book",
                      "Client book submission",
                      "Get all the books",
                      "Get rented books",
@@ -142,17 +143,18 @@ class View:
                      "Update an user",
                      "Delete an user"]
         print("\nPlease select an option:")
-        print(f"(1) {menu_list[0]}")
-        print(f"(2) {menu_list[1]}")
-        print(f"(3) {menu_list[2]}")
-        print(f"(4) {menu_list[3]}")
-        print(f"(5) {menu_list[4]}")
-        print(f"(6) {menu_list[5]}")
-        print(f"(7) {menu_list[6]}")
-        print(f"(8) {menu_list[7]}")
-        print(f"(9) {menu_list[8]}")
-        print(f"(10) {menu_list[9]}")
-        print("Enter a number between 1 to 10")
+        print(f"(0) {menu_list[0]}")
+        print(f"(1) {menu_list[1]}")
+        print(f"(2) {menu_list[2]}")
+        print(f"(3) {menu_list[3]}")
+        print(f"(4) {menu_list[4]}")
+        print(f"(5) {menu_list[5]}")
+        print(f"(6) {menu_list[6]}")
+        print(f"(7) {menu_list[7]}")
+        print(f"(8) {menu_list[8]}")
+        print(f"(9) {menu_list[9]}")
+        print(f"(10) {menu_list[10]}")
+        print("Enter a number between 0 to 10")
 
         selected_option_name = ""
         int_option = ""
@@ -165,8 +167,8 @@ class View:
             selected_option_name = "Invalid Input"
             return [selected_option, selected_option_name, menu_list]
 
-        if ((int_option >= 1) and int_option <= 10):
-            selected_option_name = menu_list[int_option-1]
+        if ((int_option >= 0) and int_option <= 10):
+            selected_option_name = menu_list[int_option]
             return [selected_option, selected_option_name, menu_list]
         else:
             selected_option_name = "Invalid Input"
@@ -190,4 +192,26 @@ class View:
         except Exception:
             return [None, None]
     
+    # operation failure/successful in librarian handler
+    def operation_message(self, message):
+        print("/////////////////////////////////////////////////////////////////")
+        print(f"{message}")
+        print("/////////////////////////////////////////////////////////////////")
     
+    # press any button to continue
+    def press_button_continue(self):
+        print("TLM> Please enter any button to continue...")
+        input("TLM> ")
+        
+    # display fine details
+    def display_fine_details(self, book_name, rented_on, rent_days, fine, user_name, user_email, due_fees, total_fees):
+        print("/////////////////////////////////////////////////////////////////")
+        print(f"User Name: {user_name}")
+        print(f"User Email: {user_email}")
+        print(f"Book Name: {book_name}")
+        print(f"Book Rented on: {rented_on}")
+        print(f"Book Rented for: {rent_days} day(s)")
+        print(f"Fine: {fine} Rupees")
+        print(f"Due Fees: {due_fees} Rupees")
+        print(f"Total Fees: {total_fees} Rupees")
+        print("/////////////////////////////////////////////////////////////////")

@@ -1,4 +1,5 @@
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 class Model:
     # constructor
@@ -37,6 +38,11 @@ class Model:
                 user_exists = False                                                           
                 # proc to create the user 
                 try:
+                    # if role is Librarian then initial fess 0 else role_fees None
+                    role_fees = None
+                    if (role == "Client"):
+                        role_fees = 0
+                    
                     proc_name = "sp_create_user"
                     proc_args = [0,
                                 self.super_admin_id,
@@ -45,7 +51,7 @@ class Model:
                                 credential_dict["email"],
                                 credential_dict["pass1"],
                                 credential_dict["ph"],
-                                None,
+                                role_fees,
                                 0]
                     user_credentials = self.cs.callproc(procname=proc_name, args=proc_args)
                     self.cn.commit()
@@ -57,7 +63,6 @@ class Model:
                     return ["200", user_credentials]
                 except Exception:
                     # on failure
-                    print("signup exception")
                     user_credentials = None
                     return ["500", user_credentials]
         except Exception:
@@ -90,7 +95,6 @@ class Model:
             return ["200", role_insert_status]
         except Exception:
             # on failure
-            print("assign role exception")
             role_insert_status = None
             return ["500", role_insert_status]
     
@@ -195,7 +199,7 @@ class Model:
             return ["500", all_books]
 
     
-    # same method will be used for 1 - book issue and return
+    # this method will be used for 1 - book issue
     def book_issue(self, app_user_id, book_id, user_id):
         try:
             # checking whether book id exist and also available for renting
@@ -229,6 +233,120 @@ class Model:
                 return ["500"]
         except Exception:
             return ["500"]
+        
+    # this method will be used for 1 - book issue
+    def book_return(self, app_user_id, book_id, user_id):
+        try:
+            # checking whether book id exist and also already rented to that specific user
+            sql_query = f"SELECT book_id, book_name, is_rented, rented_on FROM book WHERE is_rented=1 AND status=1 AND book_id={book_id} AND user_id={user_id};"
+            self.cs.execute(sql_query)
+            query_result1 = self.cs.fetchone()
+            
+            sql_query = f"SELECT first_name, last_name, email, fees FROM user WHERE user_id={user_id} AND status=1;"
+            self.cs.execute(sql_query)
+            query_result2 = self.cs.fetchone()
+            user_name = f"{query_result2[0]} {query_result2[1]}"
+            user_email = query_result2[2]
+            due_fees = query_result2[3]
+            
+            # if due fees is None then consider that as 0
+            if (due_fees == None):
+                due_fees = 0
+            
+            # if provided book id was rented to the specified user then we will calculate the number of renting days first
+            # initial fine is 0
+            total_fees = 0
+            fine = 0
+            book_name = None
+            rented_on = None
+            if (query_result1 != None):
+                duration = relativedelta(query_result1[3],datetime.now())
+                rent_days = abs(duration.days)
+                rent_months = abs(duration.months)
+                rent_years = abs(duration.years)
+
+                if (rent_months!=0):
+                    rent_days = rent_days + (rent_months*30)
+                if (rent_years!=0):
+                    rent_days = rent_days + (rent_years*365)
+                
+                book_name = query_result1[1]
+                rented_on = query_result1[3].strftime('%Y-%m-%d %H:%M:%S')
+                
+                # if book is rented for more than 20 days
+                if(rent_days >= 20):
+                    # calculating the fine
+                    extra_days = (rent_days-20)
+                    fine_multiple = extra_days//5
+                    i = 0
+
+                    while (i<=fine_multiple):
+                        fine = fine + (20 + (5 * i))
+                        i += 1
+                    
+                    # we are adding the due fees with current fees
+                    total_fees = fine + due_fees
+                    
+                    # if rent days greater than 20 then we will put the fine in the user account otherwise we will not access the user account because initially the fine will be 0 anyways 
+                    proc_name = "sp_edit_user"
+                    proc_args = [0,
+                                app_user_id,
+                                user_id,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                total_fees,
+                                None]
+                    self.cs.callproc(proc_name, proc_args)
+                    self.cn.commit()
+                    
+                # if rent days are less than 20 then fine will be 0
+                elif(rent_days<20):
+                    fine = 0
+                                    
+                # irrespective of the fine we will return the book   
+                # first we will change the book renting status and reset datetime to 0
+                datetime_reset = "0000-00-00 00:00:00"
+                proc_name = "sp_edit_book"
+                proc_args = [0,
+                            app_user_id,
+                            book_id,
+                            self.super_admin_id,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            0,
+                            datetime_reset,
+                            None]
+                
+                self.cs.callproc(proc_name, proc_args)
+                self.cn.commit()
+                
+                return ["200", book_name, rented_on, rent_days, fine, user_name, user_email, due_fees, total_fees]
+            else:
+                fine = None
+                rent_days = None
+                book_name = None
+                rented_on = None
+                user_name = None
+                user_email = None
+                due_fees = None
+                total_fees = None
+                return ["500", book_name, rented_on, rent_days, fine, user_name, user_email, due_fees, total_fees]
+        except Exception:
+                fine = None
+                rent_days = None
+                book_name = None
+                rented_on = None
+                user_name = None
+                user_email = None
+                due_fees = None
+                total_fine = None
+                return ["500", book_name, rented_on, rent_days, fine, user_name, user_email, due_fees, total_fees]
     
     # same method will be used for - 3, 4, 5
     # get all books, get rented books, get rentable books
@@ -243,7 +361,6 @@ class Model:
             self.cs.execute(f"SELECT {column_names} FROM {table_name} WHERE status=1 AND {where_clause}")
             if (all == True):
                 record_all_list = self.cs.fetchall()
-                print(record_all_list)
                 return ["200", record_all_list]
             elif (all == False):  
                 record_n_list = self.cs.fetchmany(no_of_rows)
