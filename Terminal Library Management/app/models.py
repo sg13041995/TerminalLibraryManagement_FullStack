@@ -486,3 +486,65 @@ class Model:
                 return "500"
         except Exception:
             return "500"
+        
+    # 10 - get all users with role
+    def get_user_with_role(self, user_id=None):
+        try:
+            proc_name = "sp_get_user_with_role"
+            proc_args = [0, None]
+            
+            self.cs.callproc(proc_name, proc_args)
+            all_users_with_role = [r.fetchall() for r in self.cs.stored_results()]
+            return ["200", all_users_with_role]
+        except Exception:
+            all_users_with_role = None
+            return ["500", all_users_with_role]
+    
+    # 11 - update an user
+    def edit_user(self, edit_user_details):
+        try:
+            sql_query = f"SELECT user_id FROM user WHERE user_id={edit_user_details[2]} AND status=1;"
+            self.cs.execute(sql_query)
+            query_result2 = self.cs.fetchone()
+            
+            if(query_result2 != None):   
+                proc_name = "sp_edit_user"
+                proc_args = edit_user_details
+                self.cs.callproc(proc_name, proc_args)
+                self.cn.commit()
+                return "200"
+            else:
+                return "500"
+        except Exception:
+            return "500"
+    
+    # 12 - delete an user
+    def delete_user(self, edit_user_details):
+        try:
+            sql_query = f"SELECT user_id FROM user WHERE user_id={edit_user_details[2]} AND status=1;"
+            self.cs.execute(sql_query)
+            query_result2 = self.cs.fetchone()
+            
+            if(query_result2 != None):       
+                proc_name = "sp_edit_user"
+                proc_args = edit_user_details
+                self.cs.callproc(proc_name, proc_args)
+                self.cn.commit()
+                return "200"
+            else:
+                return "500"
+        except Exception:
+            return "500"
+            
+    # 3 - get single user by id
+    def get_single_user_with_role(self, user_id):
+        try:
+            proc_name = "sp_get_single_user_with_role"
+            proc_args = [0, user_id]
+            
+            self.cs.callproc(proc_name, proc_args)
+            all_users_with_role = [r.fetchone() for r in self.cs.stored_results()]
+            return ["200", all_users_with_role]
+        except Exception:
+            all_users_with_role = None
+            return ["500", all_users_with_role]

@@ -258,7 +258,6 @@ class Controller:
             
             # setting user_id to current logged in user
             self.user__id = check_auth_role_response[1][0][0]
-            print(self.user__id)
             
             # calling the librarian/client handler based on the role, selected initially at the first step in the application
             if (self.user_role == "Client"):
@@ -484,10 +483,8 @@ class Controller:
             book_delete = self.view.get_book_details(app_user_id=self.user_id,
                                                            create=False,
                                                            delete=True)
-            print(book_delete)
             delete_status = self.model.delete_book(app_user_id=book_delete[1],
                                             book_id=book_delete[0])
-            print(delete_status)
             if (delete_status == "200"):
                 self.view.operation_message("Deleted the book Successfully")
             elif (delete_status == "500"):
@@ -495,25 +492,167 @@ class Controller:
             
             self.view.press_button_continue()        
 
-        
+        #=================================================================================
+        # 10 - get user details with role
+        #=================================================================================
+        elif (selected_menu[1] == "Get user details"):
+            user_role_status = self.model.get_user_with_role()
+            column_names = ["user_id",
+                            "first_name",
+                            "last_name",
+                            "role_type_name",
+                            "email",
+                            "password",
+                            "phone_number",
+                            "fees"]
+            
+            if (user_role_status[0] == "200"):
+                self.view.view_all_users(user_role_status[1][0], column_names)
+            elif (user_role_status[0] == "500"):
+                self.view.operation_message("Failed to fetch the users")
+            
+            self.view.press_button_continue()
+                    
+        #=================================================================================
+        # 11 - update an user
+        #=================================================================================
+        elif (selected_menu[1] == "Update an user"):
+            user_details = self.view.get_edit_user_details(app_user_id=self.user_id)
+            user_update_status = self.model.edit_user(edit_user_details=user_details)
+            
+            if (user_update_status == "200"):
+                self.view.operation_message("User updated successfully")
+            elif (user_update_status == "500"):
+                self.view.operation_message("Failed to update the user details")
+            
+            self.view.press_button_continue()        
+                                
+        #=================================================================================
+        # 12 - delete an user
+        #=================================================================================
+        elif (selected_menu[1] == "Delete an user"):
+            user_details = self.view.get_edit_user_details(app_user_id=self.user_id, edit=False, delete=True)
+            user_delete_status = self.model.delete_user(edit_user_details=user_details)
+            
+            if (user_delete_status == "200"):
+                self.view.operation_message("User deleted successfully")
+            elif (user_delete_status == "500"):
+                self.view.operation_message("Failed to delete the user")
+            
+            self.view.press_button_continue()        
+                   
         # calling self again (recursion)
         self.librarian_handler()
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     def client_handler(self):
-        print("client_handler")
-                  
+        while True:
+            selected_menu = self.view.client_menu()
+            # 0 is option, 1 is option name, 2 is list of valid options
+            self.view.display_selection(selected_menu[0], selected_menu[1])
+            # if selected option is in the list (means, not an Invalid Option)
+            if (selected_menu[1] in selected_menu[2]):
+                break
+            else:
+                continue
         
+        #=================================================================================
+        # 0 - Exit
+        #=================================================================================
+        if (selected_menu[1] == "Exit"):
+            self.exit_application_handler()
+        #=================================================================================
+        # 1 - Get rentable books
+        #=================================================================================
+         
+        elif (selected_menu[1] == "Get rentable books"):
+            column_names_string = ""
+            # asking from Model
+            column_names = ["book_id",
+                            "book_name",
+                            "book_author",
+                            "publication_company"]
+            
+            for item in column_names:
+                column_names_string += f"{item},"
+            
+            column_names_string = column_names_string[:len(column_names_string)-1]
+            
+            # model method call
+            all_books = self.model.get_all_books(column_names=column_names_string, where_clause="is_rented=0")
+            
+            # if status 200
+            if (all_books[0] == "200"):
+                self.view.view_all_books(all_books[1],column_names)
+            else:
+                self.view.operation_message("Failed to fetch rentable books list")
                 
-                    
+            self.view.press_button_continue()
+        
+        #=================================================================================
+        # 2 - View book details
+        #=================================================================================
+        
+        elif (selected_menu[1] == "View book details"):
+            column_names_string = ""
+            # asking from Model
+            column_names = ["book_id",
+                            "book_name",
+                            "book_desc"]
             
+            for item in column_names:
+                column_names_string += f"{item},"
             
+            column_names_string = column_names_string[:len(column_names_string)-1]
+            
+            # model method call
+            all_books = self.model.get_all_books(column_names=column_names_string, where_clause="is_rented=0")
+            
+            # if status 200
+            if (all_books[0] == "200"):
+                self.view.view_all_books(all_books[1],column_names)
+            else:
+                self.view.operation_message("Failed to fetch the book details")
+                
+            self.view.press_button_continue()
+        
+        #=================================================================================
+        # 3 - View my profile
+        #=================================================================================
+        
+        elif (selected_menu[1] == "Get my profile"):
+            user_role_status = self.model.get_single_user_with_role(user_id=self.user_id)
+            column_names = ["user_id",
+                            "first_name",
+                            "last_name",
+                            "role_type_name",
+                            "email",
+                            "password",
+                            "phone_number",
+                            "fees"]
+            
+            if (user_role_status[0] == "200"):
+                self.view.view_all_users(user_role_status[1], column_names)
+            elif (user_role_status[0] == "500"):
+                self.view.operation_message("Failed to fetch the profile details")
+            
+            self.view.press_button_continue()
+            
+        #=================================================================================
+        # 4 - Edit my profile
+        #=================================================================================
+        elif (selected_menu[1] == "Update my profile"):
+            user_details = self.view.get_edit_user_details(app_user_id=self.user_id, own=True)
+            user_update_status = self.model.edit_user(edit_user_details=user_details)
+            
+            if (user_update_status == "200"):
+                self.view.operation_message("Profile updated successfully")
+            elif (user_update_status == "500"):
+                self.view.operation_message("Failed to update the profile")
+            
+            self.view.press_button_continue()
+            
+        # calling self again (recursion)
+        self.client_handler()            
+
                 
                 

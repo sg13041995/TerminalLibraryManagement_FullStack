@@ -288,6 +288,7 @@ class View:
             book_id = input("TLM> ")
             if(book_id == ""):
                 edit_book_id = None
+                book_details_list[2] = edit_book_id
             else:
                 edit_book_id = book_id
                 book_details_list[2] = edit_book_id
@@ -296,6 +297,7 @@ class View:
             book_name = input("TLM> ")
             if(book_name == ""):
                 book_name = None
+                book_details_list[4] = book_name
             else:
                 book_details_list[4] = book_name
                                 
@@ -303,6 +305,7 @@ class View:
             book_desc = input("TLM> ")
             if(book_desc == ""):
                 book_desc = None
+                book_details_list[5] = book_desc
             else:
                 book_details_list[5] = book_desc
             
@@ -310,6 +313,7 @@ class View:
             book_author = input("TLM> ")
             if(book_author == ""):
                 book_author = None
+                book_details_list[6] = book_author
             else:
                 book_details_list[6] = book_author
             
@@ -317,6 +321,7 @@ class View:
             book_publication_company = input("TLM> ")
             if(book_publication_company == ""):
                 book_publication_company = None
+                book_details_list[7] = book_publication_company
             else:
                 book_details_list[7] = book_publication_company
             
@@ -324,6 +329,7 @@ class View:
             book_isbn = input("TLM> ")
             if(book_isbn == ""):
                 book_isbn = None
+                book_details_list[8] = book_isbn
             else:
                 book_details_list[8] = book_isbn
             
@@ -395,3 +401,136 @@ class View:
         print(f"Publication Company: {book_details_tuple[5]}")
         print(f"ISBN: {book_details_tuple[6]}")
         print("/////////////////////////////////////////////////////////////////")
+
+    def view_all_users(self, data_list, column_names):
+        data_frame = DataFrame(data_list, columns=column_names)
+        print(data_frame.to_markdown(tablefmt="grid"))
+        
+    def get_edit_user_details(self, app_user_id, edit=True, delete=False, own=False):
+        edit_user_details_list = [0,
+                                 app_user_id,
+                                 None, 
+                                 None,
+                                 None,
+                                 None,
+                                 None,
+                                 None,
+                                 None,
+                                 None]
+        
+        if (delete == True):
+            print("TLM> Please enter the user id:")
+            user_id = input("TLM> ")
+            if(user_id == ""):
+                user_id = "###"
+                edit_user_details_list[2] = user_id
+            else:
+                edit_user_details_list[2] = user_id
+            
+            edit_user_details_list[9] = 0
+            
+            return edit_user_details_list             
+        
+        if (edit ==True):
+            if(own == True):
+                edit_user_details_list[2] = app_user_id
+            elif(own == False):
+                print("TLM> Please enter the user id:")
+                user_id = input("TLM> ")
+                if(user_id == ""):
+                    user_id = "###"
+                    edit_user_details_list[2] = user_id
+                else:
+                    edit_user_details_list[2] = user_id
+            
+            print("TLM> Please enter the first name:")
+            f_name = input("TLM> ")
+            if(f_name == ""):
+                f_name = None
+                edit_user_details_list[3] = f_name
+            else:
+                edit_user_details_list[3] = f_name
+                                
+            print("TLM> Please enter the last name:")
+            l_name = input("TLM> ")
+            if(l_name == ""):
+                l_name = None
+                edit_user_details_list[4] = l_name
+            else:
+                edit_user_details_list[4] = l_name
+
+            if(own == True):
+                edit_user_details_list[5] = None
+            elif(own == False):
+                print("TLM> Please enter the email:")
+                user_email = input("TLM> ")
+                if(user_email == ""):
+                    user_email = None
+                    edit_user_details_list[5] = user_email
+                else:
+                    edit_user_details_list[5] = user_email
+            
+            print("TLM> Please enter the password:")
+            user_password = input("TLM> ")
+            if(user_password == ""):
+                user_password = None
+                edit_user_details_list[6] = user_password
+            else:
+                edit_user_details_list[6] = user_password
+            
+            if(own == True):
+                edit_user_details_list[7] = None
+            elif(own == False):
+                print("TLM> Please enter the phone number:")
+                phone_number = input("TLM> ")
+                if(phone_number == ""):
+                    phone_number = None
+                    edit_user_details_list[7] = phone_number
+                else:
+                    edit_user_details_list[7] = phone_number
+            
+            if(own == True):
+                edit_user_details_list[8] = None
+            elif(own == False):
+                print("TLM> Please enter the fees:")
+                user_fees = input("TLM> ")
+                if(user_fees == ""):
+                    user_fees = None
+                    edit_user_details_list[8] = user_fees
+                else:
+                    edit_user_details_list[8] = user_fees
+            
+            return edit_user_details_list
+        
+    # client menu
+    def client_menu(self):
+        menu_list = ["Exit",
+                     "Get rentable books",
+                     "View book details",
+                     "Get my profile",
+                     "Update my profile"]
+        print("\nPlease select an option:")
+        print(f"(0) {menu_list[0]}")
+        print(f"(1) {menu_list[1]}")
+        print(f"(2) {menu_list[2]}")
+        print(f"(3) {menu_list[3]}")
+        print(f"(4) {menu_list[4]}")
+        print("Enter a number between 0 to 4")
+
+        selected_option_name = ""
+        int_option = ""
+
+        selected_option = input("TLM> ")
+
+        try:
+            int_option = int(selected_option)
+        except Exception:
+            selected_option_name = "Invalid Input"
+            return [selected_option, selected_option_name, menu_list]
+
+        if ((int_option >= 0) and int_option <= 4):
+            selected_option_name = menu_list[int_option]
+            return [selected_option, selected_option_name, menu_list]
+        else:
+            selected_option_name = "Invalid Input"
+            return [selected_option, selected_option_name, menu_list]
