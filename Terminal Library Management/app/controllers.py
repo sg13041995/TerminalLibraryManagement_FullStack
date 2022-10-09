@@ -11,21 +11,27 @@ class Controller:
         self.model = model
         # view holds the object of View class
         self.view = view
+        # user_id holds the user id of the currently logged in user
         self.user_id = None
+        # user_role holds the user role of the currently logged in user
         self.user_role = None
     
+    # user_role getter
     @property
     def user__role(self):
         return self.user_role
     
+    # user_role setter
     @user__role.setter
     def user__role(self, user_role):
         self.user_role = user_role
     
+    # user_id getter
     @property
     def user__id(self):
         return self.user_id
     
+    # user_id setter
     @user__id.setter
     def user__id(self, user_id):
         self.user_id = user_id
@@ -96,7 +102,10 @@ class Controller:
                                   c="Exit",
                                   screen=2)
         return selected_option_name
-    
+
+    #=================================================================================
+    # USER SIGNUP HANDLER METHOD
+    #=================================================================================
     # handles the whole signup process
     def signup_handler(self):
         # declaring the variable
@@ -239,7 +248,10 @@ class Controller:
                         return "Exit"
                 else:
                     continue
-    
+
+    #=================================================================================
+    # USER LOGIN HANDLER METHOD
+    #=================================================================================
     # will handle login and validation during login
     def login_handler(self):
         # getting credentials from user
@@ -278,6 +290,9 @@ class Controller:
             self.view.login_wrong_credential()
             self.login_handler()
 
+    #=================================================================================
+    # LIBRARIAN HANDLER METHODS
+    #=================================================================================
     # handle the logged in user when role is librarian
     def librarian_handler(self):
         while True:
@@ -543,7 +558,10 @@ class Controller:
                    
         # calling self again (recursion)
         self.librarian_handler()
-
+        
+    #=================================================================================
+    # CLIENT HANDLER METHODS
+    #=================================================================================
     def client_handler(self):
         while True:
             selected_menu = self.view.client_menu()
@@ -650,9 +668,6 @@ class Controller:
                 self.view.operation_message("Failed to update the profile")
             
             self.view.press_button_continue()
-            
+        
         # calling self again (recursion)
-        self.client_handler()            
-
-                
-                
+        self.client_handler()

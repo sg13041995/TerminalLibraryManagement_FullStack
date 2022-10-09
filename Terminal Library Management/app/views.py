@@ -1,24 +1,27 @@
+# pandas will help to display records in a readable manner
 from pandas import DataFrame
 
+# class definition
 class View:
-    def __init__(self):
+    # constructor
+    def __init__(self) -> None:
         pass
 
     # initial greet on start of the applicaion
-    def greet_user(self):
+    def greet_user(self) -> None:
         print("//////////////////////////////////////////////////////////////")
         print("///////// Welcome to the Terminal Library Management /////////")
         print("//////////////////////////////////////////////////////////////")
 
     # exit greet when user quits the application
-    def exit_greet(self):
+    def exit_greet(self) -> None:
         print("TLM> Quiting the application...")
         print("//////////////////////////////////////////////////////////////")
         print("//////////// Thank you for using the application /////////////")
         print("//////////////////////////////////////////////////////////////")
 
     # role menu display, selection and return
-    def select_role_menu(self):
+    def select_role_menu(self) -> str:
         print("\nPlease select a role:")
         print("(a) Client")
         print("(b) Librarian")
@@ -29,11 +32,11 @@ class View:
         return selected_option
 
     # display the entered value and corresponding option if any
-    def display_selection(self, option, role):
+    def display_selection(self, option : str, role : str) -> None:
         print(f"TLM> You have selected '{option}' => '{role}'")
 
     # authentication menu display, selection and return
-    def authentication_menu(self):
+    def authentication_menu(self) -> str:
         print("\nPlease select an option:")
         print("(a) Signup")
         print("(b) Login")
@@ -44,7 +47,7 @@ class View:
         return selected_option
 
     # display signup form and take input from the user for the form
-    def signup_form(self):
+    def signup_form(self) -> dict:
         user_signup_dict = {}
 
         print("\nPlease enter the following details to signup:")
@@ -58,7 +61,7 @@ class View:
         return user_signup_dict
 
     # display submission menu for the authentication form and return the selected option to the controller
-    def form_submission_menu(self):
+    def form_submission_menu(self) -> str:
         print("\nPlease select an option:")
         print("(a) Submit")
         print("(b) Cancel")
@@ -76,23 +79,23 @@ class View:
         print("Please try again...")
 
     # message on successful signup
-    def signup_successful(self):
+    def signup_successful(self) -> None:
         print("//////////////////////////////////////////////////////////////")
         print("///////////////////// Signup Successful //////////////////////")
         print("//////////////////////////////////////////////////////////////")
 
     # message on signup failure
-    def signup_failed(self):
+    def signup_failed(self) -> None:
         print("//////////////////////////////////////////////////////////////")
         print("//////////////////////// Signup Failed ///////////////////////")
         print("//////////////////////////////////////////////////////////////")
 
     # user already exist
-    def user_already_exist(self, email):
+    def user_already_exist(self, email : str) -> None:
         print(f"TLM> Email '{email}' already registered")
 
     # authentication menu display, selection and return
-    def auth_menu_after_signup(self):
+    def auth_menu_after_signup(self) -> str:
         print("\nPlease select an option:")
         print("(a) Login")
         print("(b) Exit")
@@ -103,7 +106,7 @@ class View:
 
     # display login form and take input from the user for the form
     # returns the details entered by the user to the controller and controller take care of the logic from there
-    def login_form(self):
+    def login_form(self) -> dict:
         user_login_dict = {}
 
         print("\nPlease enter the following details to login:")
@@ -113,24 +116,24 @@ class View:
         return user_login_dict
 
     # if user successfully logged in
-    def login_greet(self, fname, lname):
+    def login_greet(self, fname : str, lname : str) -> None:
         print("/////////////////////////////////////////////////////////////////")
         print(f"/////////////////////// Login Successful ////////////////////////")
         print("/////////////////////////////////////////////////////////////////")
         print(f"TLM> Welcome {fname} {lname} to the Login Dashboard")
 
     # correct email and password but wrong role selected
-    def login_wrong_role(self, fname, lname):
+    def login_wrong_role(self, fname : str, lname : str) -> None:
         print(f"TLM> User {fname} {lname}, you have chosen a wrong role.")
         print(f"TML> The application will be closed for security reasons.")
 
     # wrong credentials and so login will fail
-    def login_wrong_credential(self):
+    def login_wrong_credential(self) -> None:
         print(f"TLM> You have entered invalid credentials.")
         print(f"TLM> Please try again...")
 
     # librarian menu
-    def librarian_menu(self):
+    def librarian_menu(self) -> None:
         menu_list = ["Exit",
                      "Issue a new book",
                      "Client book submission",
@@ -178,11 +181,13 @@ class View:
             selected_option_name = "Invalid Input"
             return [selected_option, selected_option_name, menu_list]
 
-    def view_all_books(self, data_list, column_names):
+    # view all the available books list
+    def view_all_books(self, data_list : list, column_names : list) -> None:
         data_frame = DataFrame(data_list, columns=column_names)
         print(data_frame.to_markdown(tablefmt="grid"))
     
-    def get_book_id_user_id(self, book_id=True, user_id=True, fees=False):
+    # get book id and user id for controller
+    def get_book_id_user_id(self, book_id : bool=True, user_id : bool=True, fees : bool=False) -> list:
         if((user_id == True) and (book_id == True)):
             print("TLM> Please enter the book id:")
             book_id = input("TLM> ")
@@ -223,18 +228,18 @@ class View:
     
     
     # operation failure/successful in librarian handler
-    def operation_message(self, message):
+    def operation_message(self, message : str) -> None:
         print("/////////////////////////////////////////////////////////////////")
         print(f"{message}")
         print("/////////////////////////////////////////////////////////////////")
     
     # press any button to continue
-    def press_button_continue(self):
+    def press_button_continue(self) -> None:
         print("TLM> Please enter any button to continue...")
         input("TLM> ")
         
     # display fine details
-    def display_fine_details(self, book_name, rented_on, rent_days, fine, user_name, user_email, due_fees, total_fees):
+    def display_fine_details(self, book_name, rented_on, rent_days, fine, user_name, user_email, due_fees, total_fees) -> None:
         print("/////////////////////////////////////////////////////////////////")
         print(f"User Name: {user_name}")
         print(f"User Email: {user_email}")
