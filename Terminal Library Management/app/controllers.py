@@ -1,5 +1,3 @@
-from copy import deepcopy
-import stat
 from app.models import Model
 from app.views import View
 # validator module holds the functions for validating the individual input fields of the form
